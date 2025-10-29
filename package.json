@@ -1,13 +1,35 @@
 {
-  "name": "ReactNativeImageCache",
-  "version": "0.0.1",
-  "private": true,
+  "name": "react-native-fast-cache",
+  "version": "1.0.0",
+  "description": "High-performance React Native image caching with SDWebImage and Glide",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/react-native-fast-cache#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/react-native-fast-cache.git"
+  },
+  "keywords": [
+    "react-native",
+    "image",
+    "cache",
+    "fast-image",
+    "sdwebimage",
+    "glide",
+    "performance"
+  ],
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.60.0"
   },
   "dependencies": {
     "react": "19.1.1",
