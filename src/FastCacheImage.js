@@ -11,7 +11,6 @@ import FastCacheImageNative from './NativeFastCacheImage';
 const FastCacheImage = forwardRef((props, ref) => {
   const {
     source,
-    defaultSource,
     resizeMode = 'cover',
     onLoadStart,
     onProgress,
@@ -31,7 +30,6 @@ const FastCacheImage = forwardRef((props, ref) => {
       <Image
         ref={ref}
         source={source}
-        defaultSource={defaultSource}
         resizeMode={resizeMode}
         onLoadStart={onLoadStart}
         onProgress={onProgress}
@@ -86,7 +84,6 @@ const FastCacheImage = forwardRef((props, ref) => {
       <FastCacheImageNative
         style={styles.image}
         source={source}
-        defaultSource={defaultSource}
         resizeMode={resizeMode}
         tintColor={tintColor}
         borderRadius={borderRadius}

@@ -12,13 +12,6 @@ class FastCacheImageView: SDAnimatedImageView {
         }
     }
     
-    @objc var defaultSource: NSNumber? {
-        didSet {
-            // Note: Default source (local assets) would require React Native's image loading
-            // For now, this is a placeholder for future implementation
-        }
-    }
-    
     @objc var resizeMode: String = "cover" {
         didSet {
             updateContentMode()
@@ -110,15 +103,14 @@ class FastCacheImageView: SDAnimatedImageView {
         }
         
         // Handle priority
-        var priority: Float = 0.5 // Normal priority
         if let priorityStr = source["priority"] as? String {
             switch priorityStr {
             case "low":
-                priority = 0.25
+                options.insert(.lowPriority)
             case "high":
-                priority = 1.0
+                options.insert(.highPriority)
             default:
-                priority = 0.5
+                break // Normal priority (default)
             }
         }
         

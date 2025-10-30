@@ -13,7 +13,6 @@ type Source = Readonly<{
 
 export interface NativeProps extends ViewProps {
   source?: Source;
-  defaultSource?: Int32;
   resizeMode?: string;
   tintColor?: ColorValue;
   borderRadius?: Double;

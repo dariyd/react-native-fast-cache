@@ -43,7 +43,6 @@ export interface OnErrorEvent {
 
 export interface FastCacheImageProps {
   source?: Source;
-  defaultSource?: ImageSourcePropType | number;
   resizeMode?: ResizeMode | keyof typeof ResizeMode;
   onLoadStart?(): void;
   onProgress?(event: OnProgressEvent): void;

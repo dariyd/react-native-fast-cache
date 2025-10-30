@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -10,6 +10,7 @@ import {
   useColorScheme,
   FlatList,
   Alert,
+  Dimensions,
 } from 'react-native';
 import FastCacheImage from 'react-native-fast-cache';
 
@@ -33,31 +34,36 @@ function App(): React.JSX.Element {
     () => Array.from({ length: 400 }, (_, i) => `https://picsum.photos/400/300?random=${i + 1000}`),
     []
   );
-  const ITEM_HEIGHT = 120;
-  const SEPARATOR_HEIGHT = 8;
-  const COLUMN_PADDING = 4; // Must match columnWrapperStyle paddingHorizontal
+  
+  // Calculate fixed dimensions for smooth scrolling
+  const SCREEN_WIDTH = Dimensions.get('window').width;
+  const NUM_COLUMNS = 3;
+  const SPACING = 8;
+  const ITEM_WIDTH = (SCREEN_WIDTH - (SPACING * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
+  const ITEM_HEIGHT = ITEM_WIDTH * 0.75; // Maintain aspect ratio
   
   const renderItem = React.useCallback(({ item }: { item: string }) => (
-    <FastCacheImage
-      style={styles.listImage}
-      source={{ uri: item }}
-      resizeMode={FastCacheImage.resizeMode.cover}
-    />
-  ), []);
-  const renderSeparator = React.useCallback(() => <View style={styles.separator} />, []);
+    <View style={styles.imageWrapper}>
+      <FastCacheImage
+        style={[styles.listImage, { width: ITEM_WIDTH, height: ITEM_HEIGHT }]}
+        source={{ uri: item, cache: FastCacheImage.cacheControl.immutable }}
+        resizeMode={FastCacheImage.resizeMode.cover}
+      />
+    </View>
+  ), [ITEM_WIDTH, ITEM_HEIGHT]);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#000' : '#fff',
   };
 
-  const updateCacheInfo = React.useCallback(async () => {
+  const updateCacheInfo = useCallback(async () => {
     const info = await FastCacheImage.getCacheSize();
     setCacheInfo(info);
     const path = await FastCacheImage.getCachePath();
     setCachePath(path);
   }, []);
 
-  const handlePreload = React.useCallback(() => {
+  const handlePreload = useCallback(() => {
     const sources = SAMPLE_IMAGES.map(uri => ({
       uri,
       priority: FastCacheImage.priority.high,
@@ -67,32 +73,32 @@ function App(): React.JSX.Element {
     Alert.alert('Preloading images...');
   }, []);
 
-  const handleClearMemoryCache = React.useCallback(async () => {
+  const handleClearMemoryCache = useCallback(async () => {
     await FastCacheImage.clearMemoryCache();
     Alert.alert('Memory cache cleared!');
   }, []);
 
-  const handleClearDiskCache = React.useCallback(async () => {
+  const handleClearDiskCache = useCallback(async () => {
     await FastCacheImage.clearDiskCache();
     Alert.alert('Disk cache cleared!');
     updateCacheInfo();
   }, [updateCacheInfo]);
 
-  const handleLoadStart = React.useCallback((id: string) => {
+  const handleLoadStart = useCallback((id: string) => {
     setLoading(prev => ({ ...prev, [id]: true }));
     setProgress(prev => ({ ...prev, [id]: 0 }));
   }, []);
 
-  const handleProgress = React.useCallback((id: string, event: any) => {
+  const handleProgress = useCallback((id: string, event: any) => {
     const progressValue = event.loaded / event.total;
     setProgress(prev => ({ ...prev, [id]: progressValue }));
   }, []);
 
-  const handleLoadEnd = React.useCallback((id: string) => {
+  const handleLoadEnd = useCallback((id: string) => {
     setLoading(prev => ({ ...prev, [id]: false }));
   }, []);
 
-  const footerComponent = React.useMemo(() => (
+  const renderHeader = useCallback(() => (
     <View style={styles.content}>
       <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#000' }]}>FastCacheImage Demo</Text>
 
@@ -140,11 +146,14 @@ function App(): React.JSX.Element {
       {/* Progress Indicators */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: isDarkMode ? '#fff' : '#000' }]}>Load Progress</Text>
+        <Text style={[styles.info, { color: isDarkMode ? '#ccc' : '#666' }]}>
+          Shows loading progress with progress bars. Clear disk cache first to see loading.
+        </Text>
         {SAMPLE_IMAGES.slice(0, 3).map((uri, index) => (
           <View key={index} style={styles.progressContainer}>
             <FastCacheImage
               style={styles.smallImage}
-              source={{ uri: `${uri}&t=${Date.now()}` }}
+              source={{ uri }}
               onLoadStart={() => handleLoadStart(`img-${index}`)}
               onProgress={(e) => handleProgress(`img-${index}`, e)}
               onLoadEnd={() => handleLoadEnd(`img-${index}`)}
@@ -152,12 +161,19 @@ function App(): React.JSX.Element {
             />
             <View style={styles.progressInfo}>
               <Text style={{ color: isDarkMode ? '#fff' : '#000' }}>Image {index + 1}</Text>
-              {loading[`img-${index}`] && (
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${(progress[`img-${index}`] || 0) * 100}%` }]} />
-                </View>
+              {loading[`img-${index}`] ? (
+                <>
+                  <View style={styles.progressBar}>
+                    <View style={[styles.progressFill, { width: `${(progress[`img-${index}`] || 0) * 100}%` }]} />
+                  </View>
+                  <ActivityIndicator size="small" />
+                  <Text style={{ fontSize: 10, color: isDarkMode ? '#ccc' : '#666' }}>
+                    {Math.round((progress[`img-${index}`] || 0) * 100)}%
+                  </Text>
+                </>
+              ) : (
+                <Text style={{ fontSize: 10, color: 'green' }}>✓ Loaded</Text>
               )}
-              {loading[`img-${index}`] && <ActivityIndicator />}
             </View>
           </View>
         ))}
@@ -202,7 +218,7 @@ function App(): React.JSX.Element {
         </View>
       </View>
     </View>
-  ), [isDarkMode, cacheInfo, cachePath, loading, progress, handlePreload, handleClearMemoryCache, handleClearDiskCache, updateCacheInfo, handleLoadStart, handleProgress, handleLoadEnd]);
+  ), [isDarkMode, cacheInfo, cachePath, loading, progress]);
 
   
 
@@ -218,29 +234,24 @@ function App(): React.JSX.Element {
         data={manyImages}
         renderItem={renderItem}
         keyExtractor={(_, index) => String(index)}
-        numColumns={3}
+        numColumns={NUM_COLUMNS}
         columnWrapperStyle={styles.column}
         getItemLayout={(data, index) => {
-          // Each row contains 3 items
-          // getItemLayout receives the INDEX of the item in the flat array
-          // but with numColumns=3, FlatList manages rows internally
-          // We need to calculate based on ROWS, not individual items
-          const row = Math.floor(index / 3);
-          const length = ITEM_HEIGHT + SEPARATOR_HEIGHT;
-          const offset = row * length;
+          const row = Math.floor(index / NUM_COLUMNS);
+          const rowHeight = ITEM_HEIGHT + SPACING;
           return { 
-            length: ITEM_HEIGHT, // Height of each item (separator is handled by ItemSeparatorComponent)
-            offset, 
+            length: rowHeight,
+            offset: row * rowHeight, 
             index 
           };
         }}
-        windowSize={10}
-        initialNumToRender={18}
-        maxToRenderPerBatch={18}
-        updateCellsBatchingPeriod={50}
-        removeClippedSubviews
-        ItemSeparatorComponent={renderSeparator}
-        ListFooterComponent={footerComponent}
+        contentContainerStyle={styles.listContent}
+        windowSize={21}
+        initialNumToRender={50}
+        maxToRenderPerBatch={50}
+        updateCellsBatchingPeriod={100}
+        removeClippedSubviews={true}
+        ListHeaderComponent={renderHeader}
       />
     </SafeAreaView>
   );
@@ -335,21 +346,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     borderRadius: 2,
   },
-  listContainer: {
-    height: 600,
+  listContent: {
+    paddingHorizontal: 8,
+    paddingTop: 8,
+  },
+  imageWrapper: {
+    padding: 4,
   },
   listImage: {
-    width: '32%',
-    height: 120,
     backgroundColor: '#eee',
     borderRadius: 8,
   },
-  separator: {
-    height: 8,
-  },
   column: {
     justifyContent: 'space-between',
-    paddingHorizontal: 4,
   },
 });
 
