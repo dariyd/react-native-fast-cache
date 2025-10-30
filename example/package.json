@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "19.1.1",
     "react-native": "0.82.1",
-    "react-native-fast-cache": "file:..",
+    "react-native-fast-cache": "https://github.com/dariyd/react-native-fast-cache.git",
     "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {

@@ -18,6 +18,8 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 
 class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     
@@ -105,9 +107,39 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
             options = options.transform(RoundedCorners(borderRadiusValue.toInt()))
         }
         
+        // Prepare headers if provided
+        var model: Any = uri
+        if (source.hasKey("headers")) {
+            val headersArray = source.getArray("headers")
+            if (headersArray != null && headersArray.size() > 0) {
+                val builder = LazyHeaders.Builder()
+                for (i in 0 until headersArray.size()) {
+                    val headerMap = headersArray.getMap(i)
+                    if (headerMap != null && headerMap.hasKey("key") && headerMap.hasKey("value")) {
+                        builder.addHeader(headerMap.getString("key"), headerMap.getString("value"))
+                    }
+                }
+                model = GlideUrl(uri, builder.build())
+            }
+        }
+
+        // Register for progress updates
+        ProgressInterceptor.expect(uri, object : ProgressInterceptor.Listener {
+            override fun onProgress(url: String, bytesRead: Long, contentLength: Long, done: Boolean) {
+                val map = Arguments.createMap().apply {
+                    putDouble("loaded", bytesRead.toDouble())
+                    putDouble("total", if (contentLength > 0) contentLength.toDouble() else 0.0)
+                }
+                sendEvent("onFastCacheProgress", map)
+                if (done) {
+                    ProgressInterceptor.forget(url)
+                }
+            }
+        })
+
         // Build Glide request
         val requestBuilder = Glide.with(context)
-            .load(uri)
+            .load(model)
             .apply(options)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -120,6 +152,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                         putString("error", e?.message ?: "Image load failed")
                     }
                     sendEvent("onFastCacheError", errorMap)
+                    ProgressInterceptor.forget(uri)
                     sendEvent("onFastCacheLoadEnd", Arguments.createMap())
                     return false
                 }
@@ -136,13 +169,12 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                         putInt("height", resource.intrinsicHeight)
                     }
                     sendEvent("onFastCacheLoad", loadMap)
+                    ProgressInterceptor.forget(uri)
                     sendEvent("onFastCacheLoadEnd", Arguments.createMap())
                     return false
                 }
             })
         
-        // Handle headers (using custom headers would require a custom ModelLoader)
-        // For now, we'll load the image
         requestBuilder.into(this)
     }
     

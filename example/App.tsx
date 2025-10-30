@@ -109,10 +109,10 @@ function App(): React.JSX.Element {
         <Text style={[styles.info, { color: isDarkMode ? '#ccc' : '#666' }]}>Files: {cacheInfo.fileCount}</Text>
         <Text style={[styles.info, { color: isDarkMode ? '#ccc' : '#666' }]} numberOfLines={1}>Path: {cachePath}</Text>
         <View style={styles.buttonRow}>
-          <Button title="Preload" onPress={handlePreload} />
-          <Button title="Clear Memory" onPress={handleClearMemoryCache} />
-          <Button title="Clear Disk" onPress={handleClearDiskCache} />
-          <Button title="Refresh Info" onPress={updateCacheInfo} />
+          <View style={styles.buttonWrap}><Button title="Preload" onPress={handlePreload} /></View>
+          <View style={styles.buttonWrap}><Button title="Clear Memory" onPress={handleClearMemoryCache} /></View>
+          <View style={styles.buttonWrap}><Button title="Clear Disk" onPress={handleClearDiskCache} /></View>
+          <View style={styles.buttonWrap}><Button title="Refresh Info" onPress={updateCacheInfo} /></View>
         </View>
       </View>
 
@@ -284,9 +284,13 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginTop: 8,
     gap: 8,
+  },
+  buttonWrap: {
+    width: '48%',
   },
   grid: {
     flexDirection: 'row',
