@@ -12,6 +12,14 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 apply plugin: "kotlin-kapt"
 
+// Enable React Native codegen
+apply plugin: "com.facebook.react"
+
+react {
+    libraryName = "reactnativefastcache"
+    codegenJavaPackageName = "com.fastcache"
+}
+
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
@@ -63,9 +71,6 @@ android {
 repositories {
     google()
     mavenCentral()
-    maven {
-        url "${project(':react-native').projectDir}/../react-native/android"
-    }
 }
 
 dependencies {

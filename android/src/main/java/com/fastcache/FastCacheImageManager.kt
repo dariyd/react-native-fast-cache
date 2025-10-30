@@ -8,7 +8,7 @@ import com.facebook.react.uimanager.annotations.ReactProp
 
 class FastCacheImageManager : SimpleViewManager<FastCacheImageView>() {
     
-    override fun getName(): String = "FastCacheImageView"
+    override fun getName(): String = "FastCacheImage"
     
     override fun createViewInstance(reactContext: ThemedReactContext): FastCacheImageView {
         return FastCacheImageView(reactContext)
@@ -29,8 +29,8 @@ class FastCacheImageManager : SimpleViewManager<FastCacheImageView>() {
         view.setTintColor(color)
     }
     
-    @ReactProp(name = "borderRadius")
-    fun setBorderRadius(view: FastCacheImageView, radius: Float) {
+    // Override BaseViewManager's borderRadius handler so style borderRadius works without conflict
+    override fun setBorderRadius(view: FastCacheImageView, radius: Float) {
         view.setBorderRadius(radius)
     }
     
