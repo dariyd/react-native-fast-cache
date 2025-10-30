@@ -21,6 +21,11 @@ DerivedData
 *.ipa
 *.xcuserstate
 **/.xcode.env.local
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata
+ios/build/
+example/ios/build/
 
 # Android/IntelliJ
 #
@@ -34,6 +39,14 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
+android/build/
+android/app/build/
+example/android/build/
+example/android/app/build/
+example/android/.gradle/
+captures/
+*.apk
+output.json
 
 # node.js
 #

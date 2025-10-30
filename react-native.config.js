@@ -13,5 +13,10 @@ module.exports = {
       },
     },
   },
+  codegenConfig: {
+    name: 'reactnativefastcache',
+    type: 'all',
+    jsSrcsDir: 'src',
+  },
 };
 

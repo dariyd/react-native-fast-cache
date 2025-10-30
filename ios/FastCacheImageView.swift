@@ -34,6 +34,13 @@ class FastCacheImageView: SDAnimatedImageView {
         }
     }
     
+    @objc var borderRadius: CGFloat = 0 {
+        didSet {
+            layer.cornerRadius = borderRadius
+            layer.masksToBounds = borderRadius > 0
+        }
+    }
+    
     // MARK: - Events
     @objc var onFastCacheLoadStart: RCTDirectEventBlock?
     @objc var onFastCacheProgress: RCTDirectEventBlock?
@@ -118,11 +125,21 @@ class FastCacheImageView: SDAnimatedImageView {
         // Configure context
         var context: [SDWebImageContextOption: Any] = [:]
         
-        // Handle headers
-        if let headers = source["headers"] as? [String: String], !headers.isEmpty {
+        // Handle headers (supports array of {key,value} or dictionary for back-compat)
+        var headersDict: [String: String] = [:]
+        if let headerArray = source["headers"] as? [[String: String]] {
+            for entry in headerArray {
+                if let k = entry["key"], let v = entry["value"] {
+                    headersDict[k] = v
+                }
+            }
+        } else if let headers = source["headers"] as? [String: String] {
+            headersDict = headers
+        }
+        if !headersDict.isEmpty {
             let modifier = SDWebImageDownloaderRequestModifier { request in
                 var mutableRequest = request
-                for (key, value) in headers {
+                for (key, value) in headersDict {
                     mutableRequest.setValue(value, forHTTPHeaderField: key)
                 }
                 return mutableRequest

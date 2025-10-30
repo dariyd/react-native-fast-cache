@@ -2,12 +2,11 @@ import React, { forwardRef, useCallback } from 'react';
 import {
   Image,
   NativeModules,
-  requireNativeComponent,
   StyleSheet,
   View,
 } from 'react-native';
+import FastCacheImageNative from './NativeFastCacheImage';
 
-const FastCacheImageNative = requireNativeComponent('FastCacheImage');
 
 const FastCacheImage = forwardRef((props, ref) => {
   const {

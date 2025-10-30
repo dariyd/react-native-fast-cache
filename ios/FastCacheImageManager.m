@@ -8,6 +8,7 @@ RCT_EXPORT_VIEW_PROPERTY(source, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(defaultSource, NSNumber)
 RCT_EXPORT_VIEW_PROPERTY(resizeMode, NSString)
 RCT_EXPORT_VIEW_PROPERTY(tintColor, UIColor)
+RCT_EXPORT_VIEW_PROPERTY(borderRadius, CGFloat)
 
 // Events
 RCT_EXPORT_VIEW_PROPERTY(onFastCacheLoadStart, RCTDirectEventBlock)

@@ -1,7 +1,8 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import FastCacheImage from './FastCacheImage';
+import NativeFastCacheModule from './NativeFastCacheModule';
 
-const { FastCacheModule } = NativeModules;
+const FastCacheModule = NativeFastCacheModule;
 
 // Enums
 const resizeMode = {
