@@ -1,0 +1,85 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+apply plugin: "kotlin-kapt"
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def reactNativeArchitectures() {
+    def value = project.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
+android {
+    compileSdk safeExtGet("compileSdkVersion", 36)
+    
+    namespace "com.fastcache"
+    
+    defaultConfig {
+        minSdkVersion safeExtGet("minSdkVersion", 24)
+        targetSdkVersion safeExtGet("targetSdkVersion", 36)
+        buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
+        
+        ndk {
+            abiFilters(*reactNativeArchitectures())
+        }
+    }
+    
+    buildFeatures {
+        buildConfig = true
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    maven {
+        url "${project(':react-native').projectDir}/../react-native/android"
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
+    implementation "com.facebook.react:react-android"
+    
+    // Glide dependencies
+    implementation "com.github.bumptech.glide:glide:4.16.0"
+    kapt "com.github.bumptech.glide:compiler:4.16.0"
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.16.0"
+    
+    // New Architecture support
+    if (isNewArchitectureEnabled()) {
+        implementation "com.facebook.react:react-native"
+        implementation "androidx.appcompat:appcompat:1.6.1"
+    }
+}
