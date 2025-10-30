@@ -4707,8 +4707,8 @@ react-is@^18.0.0:
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
 "react-native-fast-cache@https://github.com/dariyd/react-native-fast-cache.git":
-  version "1.0.5"
-  resolved "https://github.com/dariyd/react-native-fast-cache.git#8ffc2e672861bedc044bd5e7e8b6513621d44ca3"
+  version "1.0.6"
+  resolved "https://github.com/dariyd/react-native-fast-cache.git#3d5eb466ec404288c83b9d6696acc094d8392a91"
   dependencies:
     "@react-native/new-app-screen" "0.82.1"
     react "19.1.1"

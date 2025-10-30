@@ -1,6 +1,6 @@
 {
   "name": "react-native-fast-cache",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "High-performance React Native image caching with SDWebImage and Glide",
   "main": "src/index.js",
   "types": "src/index.d.ts",

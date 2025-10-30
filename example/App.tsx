@@ -85,16 +85,19 @@ function App(): React.JSX.Element {
   }, [updateCacheInfo]);
 
   const handleLoadStart = useCallback((id: string) => {
+    console.log('handleLoadStart', id);
     setLoading(prev => ({ ...prev, [id]: true }));
     setProgress(prev => ({ ...prev, [id]: 0 }));
   }, []);
 
   const handleProgress = useCallback((id: string, event: any) => {
     const progressValue = event.loaded / event.total;
+    console.log('progressValue', progressValue);
     setProgress(prev => ({ ...prev, [id]: progressValue }));
   }, []);
 
   const handleLoadEnd = useCallback((id: string) => {
+    console.log('handleLoadEnd', id);
     setLoading(prev => ({ ...prev, [id]: false }));
   }, []);
 
@@ -236,6 +239,7 @@ function App(): React.JSX.Element {
         keyExtractor={(_, index) => String(index)}
         numColumns={NUM_COLUMNS}
         columnWrapperStyle={styles.column}
+        keyboardShouldPersistTaps="handled"
         getItemLayout={(data, index) => {
           const row = Math.floor(index / NUM_COLUMNS);
           const rowHeight = ITEM_HEIGHT + SPACING;
@@ -250,7 +254,6 @@ function App(): React.JSX.Element {
         initialNumToRender={50}
         maxToRenderPerBatch={50}
         updateCellsBatchingPeriod={100}
-        removeClippedSubviews={true}
         ListHeaderComponent={renderHeader}
       />
     </SafeAreaView>

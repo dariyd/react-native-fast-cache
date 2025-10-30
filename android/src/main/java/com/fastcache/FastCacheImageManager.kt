@@ -43,5 +43,10 @@ class FastCacheImageManager : SimpleViewManager<FastCacheImageView>() {
             "onFastCacheLoadEnd", MapBuilder.of("registrationName", "onFastCacheLoadEnd")
         )
     }
+
+    override fun onAfterUpdateTransaction(view: FastCacheImageView) {
+        super.onAfterUpdateTransaction(view)
+        view.commitChanges()
+    }
 }
 

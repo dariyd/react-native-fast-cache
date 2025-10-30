@@ -27,6 +27,8 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     private var resizeMode: String = "cover"
     private var tintColorValue: Int? = null
     private var borderRadiusValue: Float = 0f
+    private var needsLoad: Boolean = false
+    private var currentUri: String? = null
     
     init {
         scaleType = ScaleType.CENTER_CROP
@@ -34,7 +36,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     
     fun setSource(source: ReadableMap?) {
         this.source = source
-        loadImage()
+        needsLoad = true
     }
     
     fun setResizeMode(mode: String) {
@@ -53,7 +55,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     
     fun setBorderRadius(radius: Float) {
         this.borderRadiusValue = radius
-        loadImage() // Reload to apply radius
+        needsLoad = true
     }
     
     private fun updateScaleType() {
@@ -66,9 +68,16 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
         }
     }
     
+    fun commitChanges() {
+        if (!needsLoad) return
+        needsLoad = false
+        loadImage()
+    }
+
     private fun loadImage() {
         val source = this.source ?: return
         val uri = source.getString("uri") ?: return
+        currentUri = uri
         
         // Send onLoadStart event
         sendEvent("onFastCacheLoadStart", Arguments.createMap())
@@ -116,7 +125,9 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                 for (i in 0 until headersArray.size()) {
                     val headerMap = headersArray.getMap(i)
                     if (headerMap != null && headerMap.hasKey("key") && headerMap.hasKey("value")) {
-                        builder.addHeader(headerMap.getString("key"), headerMap.getString("value"))
+                        val key = headerMap.getString("key") ?: continue
+                        val value = headerMap.getString("value") ?: continue
+                        builder.addHeader(key, value)
                     }
                 }
                 model = GlideUrl(uri, builder.build())
@@ -130,7 +141,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                     putDouble("loaded", bytesRead.toDouble())
                     putDouble("total", if (contentLength > 0) contentLength.toDouble() else 0.0)
                 }
-                sendEvent("onFastCacheProgress", map)
+                post { sendEvent("onFastCacheProgress", map) }
                 if (done) {
                     ProgressInterceptor.forget(url)
                 }
@@ -151,9 +162,9 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                     val errorMap = Arguments.createMap().apply {
                         putString("error", e?.message ?: "Image load failed")
                     }
-                    sendEvent("onFastCacheError", errorMap)
+                    post { sendEvent("onFastCacheError", errorMap) }
                     ProgressInterceptor.forget(uri)
-                    sendEvent("onFastCacheLoadEnd", Arguments.createMap())
+                    post { sendEvent("onFastCacheLoadEnd", Arguments.createMap()) }
                     return false
                 }
                 
@@ -168,14 +179,19 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                         putInt("width", resource.intrinsicWidth)
                         putInt("height", resource.intrinsicHeight)
                     }
-                    sendEvent("onFastCacheLoad", loadMap)
+                    post { sendEvent("onFastCacheLoad", loadMap) }
                     ProgressInterceptor.forget(uri)
-                    sendEvent("onFastCacheLoadEnd", Arguments.createMap())
+                    post { sendEvent("onFastCacheLoadEnd", Arguments.createMap()) }
                     return false
                 }
             })
         
         requestBuilder.into(this)
+    }
+
+    override fun onDetachedFromWindow() {
+        currentUri?.let { ProgressInterceptor.forget(it) }
+        super.onDetachedFromWindow()
     }
     
     private fun sendEvent(eventName: String, params: com.facebook.react.bridge.WritableMap) {
