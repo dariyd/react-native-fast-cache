@@ -4,7 +4,7 @@
   "description": "High-performance React Native image caching with SDWebImage and Glide",
   "main": "src/index.js",
   "types": "src/index.d.ts",
-  "author": "Your Name <your.email@example.com>",
+  "author": "Dariy D. <dariyd.soft@gmail.com",
   "license": "MIT",
   "homepage": "https://github.com/yourusername/react-native-fast-cache#readme",
   "repository": {
