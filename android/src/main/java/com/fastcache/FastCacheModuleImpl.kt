@@ -7,6 +7,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.bridge.UiThreadUtil
 import java.io.File
 
 /**
@@ -49,8 +50,14 @@ object FastCacheModuleImpl {
     fun clearMemoryCache(reactContext: ReactApplicationContext, promise: Promise) {
         try {
             val context = reactContext.currentActivity ?: reactContext
-            Glide.get(context).clearMemory()
-            promise.resolve(null)
+            UiThreadUtil.runOnUiThread {
+                try {
+                    Glide.get(context).clearMemory()
+                    promise.resolve(null)
+                } catch (e: Exception) {
+                    promise.reject("CLEAR_MEMORY_CACHE_ERROR", e.message, e)
+                }
+            }
         } catch (e: Exception) {
             promise.reject("CLEAR_MEMORY_CACHE_ERROR", e.message, e)
         }

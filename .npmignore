@@ -17,8 +17,11 @@ ios/build/
 *.xcworkspace
 *.xcodeproj
 
+# Exclude documentation
+assets/
+
 # Exclude example app
-!example/
+example/
 __tests__/
 node_modules/
 vendor/

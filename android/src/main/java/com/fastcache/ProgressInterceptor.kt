@@ -10,8 +10,10 @@ import okio.ForwardingSource
 import okio.Source
 import okio.buffer
 
+private const val PROGRESS_HEADER = "X-FastCache-Progress-Id"
+
 class ProgressResponseBody(
-    private val url: String,
+    private val requestId: String?,
     private val responseBody: ResponseBody
 ) : ResponseBody() {
     private var bufferedSource: BufferedSource? = null
@@ -35,12 +37,14 @@ class ProgressResponseBody(
                 if (bytesRead != -1L) {
                     totalBytesRead += bytesRead
                 }
-                ProgressInterceptor.dispatch(
-                    url,
-                    totalBytesRead,
-                    responseBody.contentLength(),
-                    bytesRead == -1L
-                )
+                requestId?.let { id ->
+                    ProgressInterceptor.dispatch(
+                        id,
+                        totalBytesRead,
+                        responseBody.contentLength(),
+                        bytesRead == -1L
+                    )
+                }
                 return bytesRead
             }
         }
@@ -49,36 +53,37 @@ class ProgressResponseBody(
 
 object ProgressInterceptor : Interceptor {
     interface Listener {
-        fun onProgress(url: String, bytesRead: Long, contentLength: Long, done: Boolean)
+        fun onProgress(id: String, bytesRead: Long, contentLength: Long, done: Boolean)
     }
 
-    private val listeners: MutableMap<String, Listener> = mutableMapOf()
+    private val listeners: LinkedHashMap<String, Listener> = LinkedHashMap()
 
-    fun expect(url: String, listener: Listener) {
+    fun expect(id: String, listener: Listener) {
         synchronized(listeners) {
-            listeners[url] = listener
+            listeners[id] = listener
         }
     }
 
-    fun forget(url: String) {
+    fun forget(id: String) {
         synchronized(listeners) {
-            listeners.remove(url)
+            listeners.remove(id)
         }
     }
 
-    internal fun dispatch(url: String, bytesRead: Long, contentLength: Long, done: Boolean) {
-        val listener = synchronized(listeners) { listeners[url] }
-        listener?.onProgress(url, bytesRead, contentLength, done)
-        if (done) forget(url)
+    internal fun dispatch(id: String, bytesRead: Long, contentLength: Long, done: Boolean) {
+        val listener = synchronized(listeners) { listeners[id] }
+        listener?.onProgress(id, bytesRead, contentLength, done)
+        if (done) forget(id)
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
+        val requestId = request.header(PROGRESS_HEADER)
         val response = chain.proceed(request)
         val body = response.body
         return if (body != null) {
             response.newBuilder()
-                .body(ProgressResponseBody(request.url.toString(), body))
+                .body(ProgressResponseBody(requestId, body))
                 .build()
         } else {
             response

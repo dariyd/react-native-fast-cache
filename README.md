@@ -1,8 +1,21 @@
 # React Native Fast Cache
 
-🚀 High-performance image caching for React Native using [SDWebImage](https://github.com/SDWebImage/SDWebImage) (iOS) and [Glide](https://github.com/bumptech/glide) (Android).
+[![npm version](https://badge.fury.io/js/react-native-fast-cache.svg)](https://badge.fury.io/js/react-native-fast-cache)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A drop-in replacement for React Native's `Image` component and `react-native-fast-image` with aggressive caching, better performance, and additional features.
+🚀 High-performance image caching for React Native using industry-leading native libraries — [SDWebImage](https://github.com/SDWebImage/SDWebImage) on iOS and [Glide](https://github.com/bumptech/glide) on Android.
+
+A drop-in replacement for React Native's `Image` component and `react-native-fast-image`, offering:
+
+- Best-in-class caching and decode pipelines (SDWebImage / Glide)
+- Aggressive disk and memory caching with sensible defaults
+- Smooth scrolling and low GC pressure via optimized image loading
+
+See the library in action:
+
+| iOS Demo | Android Demo |
+|----------|--------------|
+| ![iOS Demo](./assets/ios_demo.gif) | ![Android Demo](./assets/android_demo.gif) |
 
 ## Features
 
@@ -17,7 +30,7 @@ A drop-in replacement for React Native's `Image` component and `react-native-fas
 - ✅ **Preloading** - Preload images before displaying
 - ✅ **Cache management** - Clear cache programmatically
 - ✅ **TypeScript** - Full TypeScript definitions included
-- ✅ **Old & New Architecture** - Compatible with both React Native architectures
+- ✅ **Old & New Architecture** - Fully compatible with both Paper (Old) and Fabric/TurboModules (New) on iOS and Android
 
 ## Installation
 
@@ -88,9 +101,10 @@ function MyComponent() {
   style={{ width: 200, height: 200 }}
   source={{
     uri: 'https://example.com/protected/image.jpg',
-    headers: {
-      Authorization: 'Bearer your-token-here',
-    },
+    headers: [
+      { key: 'Authorization', value: 'Bearer your-token-here' },
+      { key: 'Accept', value: 'image/*' },
+    ],
   }}
 />
 ```
@@ -157,17 +171,19 @@ console.log(`Cache location: ${path}`);
 
 Object containing image source information.
 
-| Property   | Type     | Description                                    |
-| ---------- | -------- | ---------------------------------------------- |
-| `uri`      | string   | Remote URL of the image                        |
-| `headers`  | object   | HTTP headers to include with the request       |
-| `priority` | enum     | Loading priority (low, normal, high)           |
-| `cache`    | enum     | Cache control strategy (immutable, web, cacheOnly) |
+| Property   | Type                                        | Description                                    |
+| ---------- | ------------------------------------------- | ---------------------------------------------- |
+| `uri`      | string                                      | Remote URL of the image                        |
+| `headers`  | Array<{ key: string; value: string }>       | HTTP headers to include with the request       |
+| `priority` | enum                                        | Loading priority (low, normal, high)           |
+| `cache`    | enum                                        | Cache control strategy (immutable, web, cacheOnly) |
 
 ```jsx
 source={{
   uri: 'https://example.com/image.jpg',
-  headers: { Authorization: 'Bearer token' },
+  headers: [
+    { key: 'Authorization', value: 'Bearer token' },
+  ],
   priority: FastCacheImage.priority.high,
   cache: FastCacheImage.cacheControl.immutable,
 }}
@@ -370,7 +386,7 @@ All APIs are compatible, with additional features:
 | Cache size API      | ❌          | ✅              |
 | Cache path API      | ❌          | ✅              |
 | TypeScript          | Basic      | Full support   |
-| New Architecture    | ❌          | In progress    |
+| New Architecture    | ❌          | ✅              |
 | Actively maintained | ⚠️         | ✅              |
 
 ## Troubleshooting

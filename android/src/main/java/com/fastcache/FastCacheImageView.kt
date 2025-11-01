@@ -20,6 +20,7 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
+import java.util.UUID
 
 class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     
@@ -29,6 +30,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     private var borderRadiusValue: Float = 0f
     private var needsLoad: Boolean = false
     private var currentUri: String? = null
+    private var currentProgressId: String? = null
     
     init {
         scaleType = ScaleType.CENTER_CROP
@@ -78,6 +80,10 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
         val source = this.source ?: return
         val uri = source.getString("uri") ?: return
         currentUri = uri
+        // generate unique id for this request
+        val progressId = UUID.randomUUID().toString()
+        currentProgressId?.let { ProgressInterceptor.forget(it) }
+        currentProgressId = progressId
         
         // Send onLoadStart event
         sendEvent("onFastCacheLoadStart", Arguments.createMap())
@@ -117,33 +123,36 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
         }
         
         // Prepare headers if provided
-        var model: Any = uri
-        if (source.hasKey("headers")) {
-            val headersArray = source.getArray("headers")
-            if (headersArray != null && headersArray.size() > 0) {
-                val builder = LazyHeaders.Builder()
-                for (i in 0 until headersArray.size()) {
-                    val headerMap = headersArray.getMap(i)
-                    if (headerMap != null && headerMap.hasKey("key") && headerMap.hasKey("value")) {
-                        val key = headerMap.getString("key") ?: continue
-                        val value = headerMap.getString("value") ?: continue
-                        builder.addHeader(key, value)
+        var model: Any
+        run {
+            val builder = LazyHeaders.Builder()
+                .addHeader("X-FastCache-Progress-Id", progressId)
+            if (source.hasKey("headers")) {
+                val headersArray = source.getArray("headers")
+                if (headersArray != null && headersArray.size() > 0) {
+                    for (i in 0 until headersArray.size()) {
+                        val headerMap = headersArray.getMap(i)
+                        if (headerMap != null && headerMap.hasKey("key") && headerMap.hasKey("value")) {
+                            val key = headerMap.getString("key") ?: continue
+                            val value = headerMap.getString("value") ?: continue
+                            builder.addHeader(key, value)
+                        }
                     }
                 }
-                model = GlideUrl(uri, builder.build())
             }
+            model = GlideUrl(uri, builder.build())
         }
 
         // Register for progress updates
-        ProgressInterceptor.expect(uri, object : ProgressInterceptor.Listener {
-            override fun onProgress(url: String, bytesRead: Long, contentLength: Long, done: Boolean) {
+        ProgressInterceptor.expect(progressId, object : ProgressInterceptor.Listener {
+            override fun onProgress(id: String, bytesRead: Long, contentLength: Long, done: Boolean) {
                 val map = Arguments.createMap().apply {
                     putDouble("loaded", bytesRead.toDouble())
                     putDouble("total", if (contentLength > 0) contentLength.toDouble() else 0.0)
                 }
                 post { sendEvent("onFastCacheProgress", map) }
                 if (done) {
-                    ProgressInterceptor.forget(url)
+                    ProgressInterceptor.forget(id)
                 }
             }
         })
@@ -163,7 +172,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                         putString("error", e?.message ?: "Image load failed")
                     }
                     post { sendEvent("onFastCacheError", errorMap) }
-                    ProgressInterceptor.forget(uri)
+                    currentProgressId?.let { ProgressInterceptor.forget(it) }
                     post { sendEvent("onFastCacheLoadEnd", Arguments.createMap()) }
                     return false
                 }
@@ -180,7 +189,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
                         putInt("height", resource.intrinsicHeight)
                     }
                     post { sendEvent("onFastCacheLoad", loadMap) }
-                    ProgressInterceptor.forget(uri)
+                    currentProgressId?.let { ProgressInterceptor.forget(it) }
                     post { sendEvent("onFastCacheLoadEnd", Arguments.createMap()) }
                     return false
                 }
@@ -190,7 +199,7 @@ class FastCacheImageView(context: Context) : AppCompatImageView(context) {
     }
 
     override fun onDetachedFromWindow() {
-        currentUri?.let { ProgressInterceptor.forget(it) }
+        currentProgressId?.let { ProgressInterceptor.forget(it) }
         super.onDetachedFromWindow()
     }
     

@@ -13,13 +13,14 @@ import {
   Dimensions,
 } from 'react-native';
 import FastCacheImage from 'react-native-fast-cache';
+import FastCacheImageProgress from './components/FastCacheImageProgress';
 
 const SAMPLE_IMAGES = [
-  'https://picsum.photos/400/300?random=1',
-  'https://picsum.photos/400/300?random=2',
-  'https://picsum.photos/400/300?random=3',
-  'https://picsum.photos/400/300?random=4',
-  'https://picsum.photos/400/300?random=5',
+  'https://picsum.photos/5000/4000?random=1',
+  'https://picsum.photos/5000/4000?random=2',
+  'https://picsum.photos/5000/4000?random=3',
+  'https://picsum.photos/5000/4000?random=4',
+  'https://picsum.photos/5000/4000?random=5',
 ];
 
 const GIF_IMAGE = 'https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif';
@@ -28,8 +29,7 @@ function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [cacheInfo, setCacheInfo] = useState({ size: 0, fileCount: 0 });
   const [cachePath, setCachePath] = useState('');
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-  const [progress, setProgress] = useState<{ [key: string]: number }>({});
+  
   const manyImages = React.useMemo(
     () => Array.from({ length: 400 }, (_, i) => `https://picsum.photos/400/300?random=${i + 1000}`),
     []
@@ -84,22 +84,7 @@ function App(): React.JSX.Element {
     updateCacheInfo();
   }, [updateCacheInfo]);
 
-  const handleLoadStart = useCallback((id: string) => {
-    console.log('handleLoadStart', id);
-    setLoading(prev => ({ ...prev, [id]: true }));
-    setProgress(prev => ({ ...prev, [id]: 0 }));
-  }, []);
-
-  const handleProgress = useCallback((id: string, event: any) => {
-    const progressValue = event.loaded / event.total;
-    console.log('progressValue', progressValue);
-    setProgress(prev => ({ ...prev, [id]: progressValue }));
-  }, []);
-
-  const handleLoadEnd = useCallback((id: string) => {
-    console.log('handleLoadEnd', id);
-    setLoading(prev => ({ ...prev, [id]: false }));
-  }, []);
+  // progress handled internally by FastCacheImageProgress
 
   const renderHeader = useCallback(() => (
     <View style={styles.content}>
@@ -146,7 +131,7 @@ function App(): React.JSX.Element {
         </View>
       </View>
 
-      {/* Progress Indicators */}
+      {/* Progress Indicators (isolated component) */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: isDarkMode ? '#fff' : '#000' }]}>Load Progress</Text>
         <Text style={[styles.info, { color: isDarkMode ? '#ccc' : '#666' }]}>
@@ -154,29 +139,14 @@ function App(): React.JSX.Element {
         </Text>
         {SAMPLE_IMAGES.slice(0, 3).map((uri, index) => (
           <View key={index} style={styles.progressContainer}>
-            <FastCacheImage
+            <FastCacheImageProgress
               style={styles.smallImage}
               source={{ uri }}
-              onLoadStart={() => handleLoadStart(`img-${index}`)}
-              onProgress={(e) => handleProgress(`img-${index}`, e)}
-              onLoadEnd={() => handleLoadEnd(`img-${index}`)}
               resizeMode={FastCacheImage.resizeMode.cover}
+              showPercentage
             />
             <View style={styles.progressInfo}>
               <Text style={{ color: isDarkMode ? '#fff' : '#000' }}>Image {index + 1}</Text>
-              {loading[`img-${index}`] ? (
-                <>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${(progress[`img-${index}`] || 0) * 100}%` }]} />
-                  </View>
-                  <ActivityIndicator size="small" />
-                  <Text style={{ fontSize: 10, color: isDarkMode ? '#ccc' : '#666' }}>
-                    {Math.round((progress[`img-${index}`] || 0) * 100)}%
-                  </Text>
-                </>
-              ) : (
-                <Text style={{ fontSize: 10, color: 'green' }}>✓ Loaded</Text>
-              )}
             </View>
           </View>
         ))}
@@ -221,7 +191,7 @@ function App(): React.JSX.Element {
         </View>
       </View>
     </View>
-  ), [isDarkMode, cacheInfo, cachePath, loading, progress]);
+  ), [isDarkMode, cacheInfo, cachePath]);
 
   
 
