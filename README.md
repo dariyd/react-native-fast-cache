@@ -1,6 +1,6 @@
 # React Native Fast Cache
 
-[![npm version](https://badge.fury.io/js/react-native-fast-cache.svg)](https://badge.fury.io/js/react-native-fast-cache)
+[![npm version](https://img.shields.io/npm/v/react-native-fast-cache.svg?cacheSeconds=3600)](https://www.npmjs.com/package/react-native-fast-cache)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 🚀 High-performance image caching for React Native using industry-leading native libraries — [SDWebImage](https://github.com/SDWebImage/SDWebImage) on iOS and [Glide](https://github.com/bumptech/glide) on Android.

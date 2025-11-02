@@ -1,6 +1,6 @@
 {
   "name": "react-native-fast-cache",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "High-performance React Native image caching with SDWebImage and Glide",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -11,13 +11,37 @@
     "type": "git",
     "url": "git+https://github.com/dariyd/react-native-fast-cache.git"
   },
+  "bugs": {
+    "url": "https://github.com/dariyd/react-native-fast-cache/issues"
+  },
   "keywords": [
     "react-native",
+    "reactnative",
+    "rn",
+    "react-native-image",
     "image",
+    "image-caching",
+    "image-loader",
     "cache",
+    "preload",
+    "priority",
+    "progress",
+    "headers",
+    "authorization",
+    "gif",
+    "webp",
     "fast-image",
+    "fast-image-alternative",
     "sdwebimage",
+    "sdwebimage-downloader",
     "glide",
+    "glide-okhttp",
+    "fabric",
+    "turbo-modules",
+    "new-architecture",
+    "react-native-library",
+    "android",
+    "ios",
     "performance"
   ],
   "scripts": {
