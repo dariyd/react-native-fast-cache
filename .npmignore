@@ -21,13 +21,14 @@ ios/build/
 *.xcworkspace
 *.xcodeproj
 
-# Include assets used by README (for npm page rendering)
-!assets/
-!assets/**
+# Exclude assets from npm package
+# (README images won't render on npmjs.com if hosted here)
+# Keep assets only in the repo, not in the published tarball
 
 # Exclude example app
 example/
 __tests__/
 node_modules/
 vendor/
+assets/
 
