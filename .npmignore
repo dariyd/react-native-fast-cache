@@ -1,11 +1,15 @@
 # Ignore everything by default
 *
 
-# Include what we need
+# Include what we need (and their contents)
 !src/
+!src/**
 !ios/
+!ios/**
 !android/
+!android/**
 !react-native-fast-cache.podspec
+!react-native.config.js
 !package.json
 !README.md
 !LICENSE
@@ -17,8 +21,9 @@ ios/build/
 *.xcworkspace
 *.xcodeproj
 
-# Exclude documentation
-assets/
+# Include assets used by README (for npm page rendering)
+!assets/
+!assets/**
 
 # Exclude example app
 example/
