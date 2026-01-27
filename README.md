@@ -15,7 +15,7 @@ See the library in action:
 
 | iOS Demo | Android Demo |
 |----------|--------------|
-| ![iOS Demo](./assets/ios_demo.gif) | ![Android Demo](./assets/android_demo.gif) |
+| ![iOS Demo](https://raw.githubusercontent.com/dariyd/react-native-fast-cache/main/assets/ios_demo.gif) | ![Android Demo](https://raw.githubusercontent.com/dariyd/react-native-fast-cache/main/assets/android_demo.gif) |
 
 ## Features
 
@@ -46,7 +46,44 @@ yarn add react-native-fast-cache
 cd ios && pod install
 ```
 
-The package will automatically configure SDWebImage (v5.21+) via CocoaPods.
+#### 1) Podfile additions (Swift + SDWebImage)
+
+Add this to your app `ios/Podfile`:
+
+```ruby
+# Required for Swift compatibility with SDWebImage
+pod 'SDWebImage', :modular_headers => true
+pod 'SDWebImageWebPCoder', :modular_headers => true
+pod 'SDWebImagePhotosPlugin', :modular_headers => true
+```
+
+Then run:
+
+```bash
+cd ios && pod install
+```
+
+#### 2) AppDelegate.swift configuration
+
+Add these imports to `AppDelegate.swift`:
+
+```swift
+import SDWebImage
+import SDWebImageWebPCoder
+import SDWebImagePhotosPlugin
+```
+
+And configure SDWebImage at app launch (e.g. inside `application(_:didFinishLaunchingWithOptions:)`):
+
+```swift
+// Configure SDWebImage
+// Register WebP format support
+SDImageCodersManager.shared.addCoder(SDImageWebPCoder.shared)
+SDImageLoadersManager.shared.addLoader(SDImagePhotosLoader.shared)
+SDWebImageManager.defaultImageLoader = SDImageLoadersManager.shared
+SDImageCache.shared.config.maxMemoryCost = 250 * 1024 * 1024 // 250 MB of memory
+SDImageCache.shared.config.maxDiskSize = 400 * 1024 * 1024 // 400 MB of disk
+```
 
 ### Android Setup
 
@@ -136,7 +173,7 @@ function ImageWithProgress() {
 FastCacheImage.preload([
   {
     uri: 'https://example.com/image1.jpg',
-    headers: { Authorization: 'Bearer token' },
+    headers: [{ key: 'Authorization', value: 'Bearer token' }],
   },
   {
     uri: 'https://example.com/image2.jpg',

@@ -19,6 +19,8 @@ Pod::Spec.new do |s|
   s.dependency 'SDWebImage', '~> 5.21'
   # WebP support for iOS 13+
   s.dependency 'SDWebImageWebPCoder', '~> 0.14'
+  # Photos framework support (PHAsset / localIdentifier)
+  s.dependency 'SDWebImagePhotosPlugin', '~> 1.2'
   
   # New Architecture support
   if ENV['RCT_NEW_ARCH_ENABLED'] == '1' then

@@ -45,36 +45,6 @@ const FastCacheImage = forwardRef((props, ref) => {
     );
   }
 
-  // Event handlers for native events
-  const handleLoadStart = useCallback(() => {
-    onLoadStart?.();
-  }, [onLoadStart]);
-
-  const handleProgress = useCallback(
-    (event) => {
-      onProgress?.(event.nativeEvent);
-    },
-    [onProgress]
-  );
-
-  const handleLoad = useCallback(
-    (event) => {
-      onLoad?.(event.nativeEvent);
-    },
-    [onLoad]
-  );
-
-  const handleError = useCallback(
-    (event) => {
-      onError?.(event.nativeEvent);
-    },
-    [onError]
-  );
-
-  const handleLoadEnd = useCallback(() => {
-    onLoadEnd?.();
-  }, [onLoadEnd]);
-
   // Extract border radius from style
   const flatStyle = StyleSheet.flatten(style) || {};
   const borderRadius = flatStyle.borderRadius || 0;
@@ -87,11 +57,11 @@ const FastCacheImage = forwardRef((props, ref) => {
         resizeMode={resizeMode}
         tintColor={tintColor}
         borderRadius={borderRadius}
-        onFastCacheLoadStart={handleLoadStart}
-        onFastCacheProgress={handleProgress}
-        onFastCacheLoad={handleLoad}
-        onFastCacheError={handleError}
-        onFastCacheLoadEnd={handleLoadEnd}
+        onFastCacheLoadStart={onLoadStart}
+        onFastCacheProgress={onProgress}
+        onFastCacheLoad={onLoad}
+        onFastCacheError={onError}
+        onFastCacheLoadEnd={onLoadEnd}
         {...otherProps}
       />
       {children}
